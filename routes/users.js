@@ -6,7 +6,11 @@ const authenticate = require("../authenticate");
 const router = express.Router();
 
 /* GET users listing. */
-router.get("/", function (req, res, next) {
+router.get("/", authenticate.verifyUser, authenticate.verifyAdmin, function (
+  req,
+  res,
+  next
+) {
   res.send("respond with a resource");
 });
 
@@ -63,7 +67,7 @@ router.get("/logout", (req, res, next) => {
   } else {
     const err = new Error("You are not logged in!");
     err.status = 401;
-    return next(err);
+    return next(Err);
   }
 });
 
