@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const Campsite = require("../models/campsite");
 const authenticate = require("../authenticate");
+
 const campsiteRouter = express.Router();
 
 campsiteRouter.use(bodyParser.json());
@@ -18,7 +19,6 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
   .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Campsite.create(req.body)
       .then((campsite) => {
@@ -29,12 +29,10 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
-  .put(authenticate.verifyUser, (req, res) => {
+  .put((req, res) => {
     res.statusCode = 403;
     res.end("PUT operation not supported on /campsites");
   })
-
   .delete(
     authenticate.verifyUser,
     authenticate.verifyAdmin,
@@ -61,14 +59,12 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
-  .post(authenticate.verifyUser, (req, res) => {
+  .post((req, res) => {
     res.statusCode = 403;
     res.end(
       `POST operation not supported on /campsites/${req.params.campsiteId}`
     );
   })
-
   .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Campsite.findByIdAndUpdate(
       req.params.campsiteId,
@@ -84,7 +80,6 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
   .delete(
     authenticate.verifyUser,
     authenticate.verifyAdmin,
@@ -117,7 +112,6 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
   .post(authenticate.verifyUser, (req, res, next) => {
     Campsite.findById(req.params.campsiteId)
       .then((campsite) => {
@@ -140,14 +134,12 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
-  .put(authenticate.verifyUser, (req, res) => {
+  .put((req, res) => {
     res.statusCode = 403;
     res.end(
       `PUT operation not supported on /campsites/${req.params.campsiteId}/comments`
     );
   })
-
   .delete(
     authenticate.verifyUser,
     authenticate.verifyAdmin,
@@ -198,27 +190,20 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
-  .post(authenticate.verifyUser, (req, res) => {
+  .post((req, res) => {
     res.statusCode = 403;
     res.end(
       `POST operation not supported on /campsites/${req.params.campsiteId}/comments/${req.params.commentId}`
     );
   })
-
   .put(authenticate.verifyUser, (req, res, next) => {
     Campsite.findById(req.params.campsiteId)
       .then((campsite) => {
         if (campsite && campsite.comments.id(req.params.commentId)) {
-          const author_id_from_request = req.user._id;
-          const comment_id_from_request = req.params.commentId;
-          const comment_from_database = campsite.comments.id(
-            comment_id_from_request
-          );
-          const author_id_from_comment_from_database =
-            comment_from_database.author._id;
           if (
-            author_id_from_request.equals(author_id_from_comment_from_database)
+            campsite.comments
+              .id(req.params.commentId)
+              .author._id.equals(req.user._id)
           ) {
             if (req.body.rating) {
               campsite.comments.id(req.params.commentId).rating =
@@ -252,22 +237,15 @@ campsiteRouter
       })
       .catch((err) => next(err));
   })
-
   .delete(authenticate.verifyUser, (req, res, next) => {
     Campsite.findById(req.params.campsiteId)
       .then((campsite) => {
-        const author_id_from_request = req.user._id;
-        const comment_id_from_request = req.params.commentId;
-        const comment_from_database = campsite.comments.id(
-          comment_id_from_request
-        );
-        const author_id_from_comment_from_database =
-          comment_from_database.author._id;
-        if (
-          author_id_from_request.equals(author_id_from_comment_from_database) ||
-          req.user.admin
-        ) {
-          if (campsite && campsite.comments.id(req.params.commentId)) {
+        if (campsite && campsite.comments.id(req.params.commentId)) {
+          if (
+            campsite.comments
+              .id(req.params.commentId)
+              .author._id.equals(req.user._id)
+          ) {
             campsite.comments.id(req.params.commentId).remove();
             campsite
               .save()

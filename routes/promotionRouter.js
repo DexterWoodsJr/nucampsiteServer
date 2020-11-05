@@ -11,26 +11,26 @@ promotionRouter
   .route("/")
   .get((req, res, next) => {
     Promotion.find()
-      .then((promotion) => {
+      .then((promotions) => {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        res.json(promotion);
+        res.json(promotions);
       })
       .catch((err) => next(err));
   })
   .post(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Promotion.create(req.body)
       .then((promotion) => {
-        console.log("Promotion created", promotion);
+        console.log("Promotion Created ", promotion);
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.json(promotion);
       })
       .catch((err) => next(err));
   })
-  .put(authenticate.verifyUser, (req, res) => {
+  .put((req, res) => {
     res.statusCode = 403;
-    res.end(`PUT operation not supported on /promotions`);
+    res.end("PUT operation not supported on /promotions");
   })
   .delete(
     authenticate.verifyUser,
@@ -57,7 +57,7 @@ promotionRouter
       })
       .catch((err) => next(err));
   })
-  .post(authenticate.verifyUser, (req, res) => {
+  .post((req, res) => {
     res.statusCode = 403;
     res.end(
       `POST operation not supported on /promotions/${req.params.promotionId}`
